@@ -86,11 +86,11 @@ public class FireDataService {
         return this.allStats;
     }
 
-    public double getTotalNzFires() {
+    public int getTotalNzFires() {
         return this.totalNZFires;
     }
 
-    public double getTotalAusFires() {
+    public int getTotalAusFires() {
         return this.totalAusFires;
     }
 
