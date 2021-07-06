@@ -61,7 +61,7 @@ public class FireDataService {
             //determine country based on longitude  
             if (Double.parseDouble(record.get("longitude")) > 153.637) { //most eastern point of aus!
                fireStat.setCountry("NZ");
-               this.totalNZFires++; 
+               this.totalNZFires++;  
             } 
             else {
                 fireStat.setCountry("AUS");
