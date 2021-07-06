@@ -1,7 +1,5 @@
 package io.fabianfagan.firetracker.services;
 
-import io.fabianfagan.modules.FireStats;
-
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -14,6 +12,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import io.fabianfagan.firetracker.modules.FireStats;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,6 +30,8 @@ public class FireDataService {
 
     private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";
     private List<FireStats> allStats = new ArrayList<>(); 
+    private int totalAusFires = 0; 
+    private int totalNZFires = 0;
 
     /** 
      * Uses HTTP request/response to fetch data on active fires from US Gov website:
@@ -54,14 +56,42 @@ public class FireDataService {
 
         //create a FireStat object for each value and add to list
         for (CSVRecord record : records) {
-            FireStats fireStat = new FireStats(); 
+            FireStats fireStat = new FireStats();     
+
+            //determine country based on longitude  
+            if (Double.parseDouble(record.get("longitude")) > 153.637) { //most eastern point of aus!
+               fireStat.setCountry("NZ");
+               this.totalNZFires++; 
+            } 
+            else {
+                fireStat.setCountry("AUS");
+                this.totalAusFires++; 
+            }
+
+            //add other fields & add to list
             fireStat.setLat(record.get("latitude"));
             fireStat.setLon(record.get("longitude"));
             fireStat.setTime(record.get("acq_time"));
             fireStat.setBrightness(record.get("brightness"));
-            System.out.println(fireStat); 
             newStats.add(fireStat); 
         }
         this.allStats = newStats; 
     }
+    
+    /**
+     * Getter methods for values used by the HomeController to add to module.
+     */
+
+    public List<FireStats> getAllStats() {
+        return this.allStats;
+    }
+
+    public double getTotalNzFires() {
+        return this.totalNZFires;
+    }
+
+    public double getTotalAusFires() {
+        return this.totalAusFires;
+    }
+
 }
