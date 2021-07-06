@@ -10,23 +10,26 @@
 </head>
 <div class="container">
 <body>
-<h1>Active Fire Tracker (AUS/NZ)</h1>
-<p>Statistics are updated daily and taken from NASA satelite data.</p>
+<h1>Active Fire Tracker 
+    <small class="text-muted">(AUS/NZ)</small>
+</h1>
+<p class = "lead">Statistics are updated daily and taken from NASA satelite data.</p>
+
 <div class="jumbotron">
-    <h1 class="display-4"th:text="${totalAUS}"></h1>
+    <h1 class="display-4  text-danger"th:text="${totalAUS}"></h1>
     <p class="lead">Total Australian fires</p>
     <hr class="my-4">  
   </div>
 
 <div class="jumbotron">
-    <h1 class="display-4"th:text="${totalNZ}"></h1>
+    <h1 class="display-4  text-danger"th:text="${totalNZ}"></h1>
     <p class="lead">Total New Zealand fires</p>
     <hr class="my-4">  
   </div>
 
-  <p>CURRENTLY ACTIVE FIRES: </p>
-
-    <table class = "table">
+  <p >CURRENTLY ACTIVE FIRES: </p>
+  <div class="p-3 mb-2 bg-secondary text-white">
+    <table class = "table text-white">
         <tr>
             <th>Country</th>
             <th>Latitude</th>
@@ -42,6 +45,7 @@
             <td th:text="${fireStat.time}">0</td>
         </tr>
     </table>
+  </div>
 </body>
 </div>
 </html>
