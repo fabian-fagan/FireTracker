@@ -23,6 +23,7 @@ public class HomeController {
         model.addAttribute("fireStats", fireDataService.getAllStats()); 
         model.addAttribute("totalNZ", fireDataService.getTotalNzFires()); 
         model.addAttribute("totalAUS", fireDataService.getTotalAusFires()); 
+        model.addAttribute("totalPI", fireDataService.getTotalPIFires()); 
         return "home"; 
     }
 }

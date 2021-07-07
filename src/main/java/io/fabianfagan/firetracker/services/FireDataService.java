@@ -32,6 +32,7 @@ public class FireDataService {
     private List<FireStats> allStats = new ArrayList<>(); 
     private int totalAusFires = 0; 
     private int totalNZFires = 0;
+    private int totalPIFires = 0; 
 
     /** 
      * Uses HTTP request/response to fetch data on active fires from US Gov website:
@@ -59,11 +60,17 @@ public class FireDataService {
             FireStats fireStat = new FireStats();     
 
             //determine country based on longitude  
-            if (Double.parseDouble(record.get("longitude")) > 153.637) { //most eastern point of aus!
-               fireStat.setCountry("NZ");
-               this.totalNZFires++;  
+            if (Double.parseDouble(record.get("longitude")) > 153.637) { //more east than Australia
+                if (Double.parseDouble(record.get("latitude")) > -34.394) { //more north than NZ
+                    fireStat.setCountry("PI");
+                    this.totalPIFires++;
+                }
+                else {//NZ
+                    fireStat.setCountry("NZ");
+                    this.totalNZFires++;  
+                }
             } 
-            else {
+            else {//Australia
                 fireStat.setCountry("AUS");
                 this.totalAusFires++; 
             }
@@ -77,7 +84,8 @@ public class FireDataService {
         }
         this.allStats = newStats; 
     }
-    
+       
+
     /**
      * Getter methods for values used by the HomeController to add to module.
      */
@@ -92,6 +100,10 @@ public class FireDataService {
 
     public int getTotalAusFires() {
         return this.totalAusFires;
+    }
+
+    public int getTotalPIFires() {
+        return this.totalPIFires;
     }
 
 }
