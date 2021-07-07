@@ -30,6 +30,9 @@ public class FireDataService {
 
     private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";
     private List<FireStats> allStats = new ArrayList<>(); 
+    private List<FireStats> ausStats = new ArrayList<>(); 
+    private List<FireStats> nzStats = new ArrayList<>(); 
+    private List<FireStats> piStats = new ArrayList<>(); 
     private int totalAusFires = 0; 
     private int totalNZFires = 0;
     private int totalPIFires = 0; 
@@ -42,7 +45,11 @@ public class FireDataService {
     @PostConstruct
     @Scheduled(cron = "* * 1 * * *") //schedules to update each day 
     public void fetchFireData() throws IOException, InterruptedException {
-        List<FireStats> newStats = new ArrayList<>(); 
+        //Create new lists for concurrency issues
+        List<FireStats> newAllStats = new ArrayList<>(); 
+        List<FireStats> newAusStats = new ArrayList<>(); 
+        List<FireStats> newNzStats = new ArrayList<>(); 
+        List<FireStats> newPiStats = new ArrayList<>(); 
 
         // create new client
         HttpClient client = HttpClient.newHttpClient();
@@ -59,19 +66,22 @@ public class FireDataService {
         for (CSVRecord record : records) {
             FireStats fireStat = new FireStats();     
 
-            //determine country based on longitude  
+            //determine country based on longitude and latitude  
             if (Double.parseDouble(record.get("longitude")) > 153.637) { //more east than Australia
                 if (Double.parseDouble(record.get("latitude")) > -34.394) { //more north than NZ
                     fireStat.setCountry("PI");
+                    newPiStats.add(fireStat); 
                     this.totalPIFires++;
                 }
                 else {//NZ
                     fireStat.setCountry("NZ");
+                    newNzStats.add(fireStat); 
                     this.totalNZFires++;  
                 }
             } 
             else {//Australia
                 fireStat.setCountry("AUS");
+                newAusStats.add(fireStat); 
                 this.totalAusFires++; 
             }
 
@@ -80,9 +90,12 @@ public class FireDataService {
             fireStat.setLon(record.get("longitude"));
             fireStat.setTime(record.get("acq_time"));
             fireStat.setBrightness(record.get("brightness"));
-            newStats.add(fireStat); 
+            newAllStats.add(fireStat); 
         }
-        this.allStats = newStats; 
+        this.allStats = newAllStats; 
+        this.ausStats = newAusStats;
+        this.nzStats = newNzStats;
+        this.piStats = newPiStats; 
     }
        
 
@@ -92,6 +105,18 @@ public class FireDataService {
 
     public List<FireStats> getAllStats() {
         return this.allStats;
+    }
+
+    public List<FireStats> getAusStats() {
+        return this.ausStats;
+    }
+
+    public List<FireStats> getNzStats() {
+        return this.nzStats;
+    }
+
+    public List<FireStats> getPiStats() {
+        return this.piStats;
     }
 
     public int getTotalNzFires() {
