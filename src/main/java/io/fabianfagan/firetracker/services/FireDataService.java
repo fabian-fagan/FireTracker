@@ -19,37 +19,37 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 
-
 /**
- * Service class used to fetch the data of current active fires.
- * Creates a list of FireStats objects.
+ * Service class used to fetch the data of current active fires. Creates a list
+ * of FireStats objects.
+ * 
  * @author Fabian Fagan
  */
 @Service
 public class FireDataService {
 
     private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";
-    private List<FireStats> allStats = new ArrayList<>(); 
-    private List<FireStats> ausStats = new ArrayList<>(); 
-    private List<FireStats> nzStats = new ArrayList<>(); 
-    private List<FireStats> piStats = new ArrayList<>(); 
-    private int totalAusFires = 0; 
+    private List<FireStats> allStats = new ArrayList<>();
+    private List<FireStats> ausStats = new ArrayList<>();
+    private List<FireStats> nzStats = new ArrayList<>();
+    private List<FireStats> piStats = new ArrayList<>();
+    private int totalAusFires = 0;
     private int totalNZFires = 0;
-    private int totalPIFires = 0; 
+    private int totalPIFires = 0;
 
-    /** 
+    /**
      * Uses HTTP request/response to fetch data on active fires from US Gov website:
      * https://firms.modaps.eosdis.nasa.gov/active_fire/#firms-txt
      * 
      */
     @PostConstruct
-    @Scheduled(cron = "* * 1 * * *") //schedules to update each day 
+    @Scheduled(cron = "* * 1 * * *") // schedules to update each day
     public void fetchFireData() throws IOException, InterruptedException {
-        //Create new lists for concurrency issues
-        List<FireStats> newAllStats = new ArrayList<>(); 
-        List<FireStats> newAusStats = new ArrayList<>(); 
-        List<FireStats> newNzStats = new ArrayList<>(); 
-        List<FireStats> newPiStats = new ArrayList<>(); 
+        // Create new lists for concurrency issues
+        List<FireStats> newAllStats = new ArrayList<>();
+        List<FireStats> newAusStats = new ArrayList<>();
+        List<FireStats> newNzStats = new ArrayList<>();
+        List<FireStats> newPiStats = new ArrayList<>();
 
         // create new client
         HttpClient client = HttpClient.newHttpClient();
@@ -62,42 +62,44 @@ public class FireDataService {
         StringReader csvBodyReader = new StringReader(httpResponse.body());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
 
-        //create a FireStat object for each value and add to list
+        // create a FireStat object for each value and add to list
         for (CSVRecord record : records) {
-            FireStats fireStat = new FireStats();     
+            FireStats fireStat = new FireStats();
 
-            //determine country based on longitude and latitude  
-            if (Double.parseDouble(record.get("longitude")) > 153.637) { //more east than Australia
-                if (Double.parseDouble(record.get("latitude")) > -34.394) { //more north than NZ
+            // determine country based on longitude and latitude
+            if (Double.parseDouble(record.get("longitude")) > 153.637) { // more east than Australia
+                if (Double.parseDouble(record.get("latitude")) > -34.394) { // more north than NZ
                     fireStat.setCountry("PI");
-                    newPiStats.add(fireStat); 
+                    newPiStats.add(fireStat);
                     this.totalPIFires++;
-                }
-                else {//NZ
+                } 
+                else {// NZ
                     fireStat.setCountry("NZ");
-                    newNzStats.add(fireStat); 
-                    this.totalNZFires++;  
+                    newNzStats.add(fireStat);
+                    this.totalNZFires++;
                 }
             } 
-            else {//Australia
+            else {// Australia
                 fireStat.setCountry("AUS");
-                newAusStats.add(fireStat); 
-                this.totalAusFires++; 
+                newAusStats.add(fireStat);
+                this.totalAusFires++;
             }
 
-            //add other fields & add to list
-            fireStat.setLat(record.get("latitude"));
-            fireStat.setLon(record.get("longitude"));
+            // add other fields & add to list
+            String lat = record.get("latitude");
+            String lon = record.get("longitude");
+            fireStat.setArea(calculateArea(lat, lon, fireStat.getCountry()));
+            fireStat.setLat(lat);
+            fireStat.setLon(lon);
             fireStat.setTime(record.get("acq_time"));
             fireStat.setBrightness(record.get("brightness"));
-            newAllStats.add(fireStat); 
+            newAllStats.add(fireStat);
         }
-        this.allStats = newAllStats; 
+        this.allStats = newAllStats;
         this.ausStats = newAusStats;
         this.nzStats = newNzStats;
-        this.piStats = newPiStats; 
+        this.piStats = newPiStats;
     }
-       
 
     /**
      * Getter methods for values used by the HomeController to add to module.
@@ -129,6 +131,67 @@ public class FireDataService {
 
     public int getTotalPIFires() {
         return this.totalPIFires;
+    }
+
+    /**
+     * Calculates the estimated area (state for AUS, north/south for NZ & island for
+     * PIs). Messy, but cheaper than calling a Geocoding API for every entry!
+     * 
+     * @param lat
+     * @param lon
+     * @return Estimated area
+     */
+    private String calculateArea(String latitude, String longitude, String country) {
+        double lat = Double.parseDouble(latitude);
+        double lon = Double.parseDouble(longitude);
+        if (country.equals("NZ")) {
+            if (lat > -41.33) {
+                return "North Island";
+            } 
+            else {
+                return "South Island";
+            }
+        } 
+        else if (country.equals("PI")) {
+            if (lon < 177) {
+                return "New Calidonia";
+            }
+            if (lon > 177.00 && lon < 179.99) {
+                return "Fiji";
+            }
+            if (lon > -172.8 && lat > 14.55) {
+                return "Samoa";
+            } 
+            else {
+                return "Tonga/Niue/Cook Islands";
+            }
+        } 
+        else if (country.equals("AUS")) {
+            if (lon < 129) {
+                return "Western Australia";
+            }
+            if (lon > 129 && lon < 141) {
+                if (lat > -26) {
+                    return "Northern Territory";
+                } 
+                else {
+                    return "South Australia";
+                }
+            }
+            if (lon > 141) {
+                if (lat > -28.55) {
+                    return "Queensland";
+                } 
+                else {
+                    return "NSW";
+                }
+            } 
+            else if (lat < -39.00) {
+                return "Tasmania";
+            }
+        }
+
+        return "Unknown";
     }
 
 }

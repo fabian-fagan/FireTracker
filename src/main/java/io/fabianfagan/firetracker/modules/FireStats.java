@@ -2,23 +2,40 @@ package io.fabianfagan.firetracker.modules;
 
 /**
  * An object for holding stats about a singular fire from the dataset. 
- * (country, latitude, longitude, time, brightness). 
+ * (country, area, latitude, longitude, time, brightness). 
  * @author Fabian Fagan
  */
 public class FireStats {
     private String country;
+    private String area; 
     private String lat;
     private String lon; 
     private String time; 
     private String brightness;
 
+     
+    /**
+     * Getters & Setters
+     */
 
     public String getCountry() {
-        return country;
+        return this.country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    } 
+
+    public String getArea() {
+        return this.area;
+    }
+
+    public void setArea(String area) {
+        this.area = area; 
     }
 
     public String getBrightness() {
-        return brightness;
+        return this.brightness;
     }
 
     public void setBrightness(String brightness) {
@@ -26,7 +43,7 @@ public class FireStats {
     }
 
     public String getTime() {
-        return time;
+        return this.time;
     }
 
     public void setTime(String time) {
@@ -34,24 +51,23 @@ public class FireStats {
     }
 
     public String getLon() {
-        return lon;
+        return this.lon;
     }
 
     public void setLon(String lon) {
         this.lon = lon;
     }
     public String getLat() {
-        return lat;
+        return this.lat;
     }
 
     public void setLat(String lat) {
         this.lat = lat;
     }
-
-    public void setCountry(String country) {
-        this.country = country;
-    } 
-
+  
+     /**
+      * ToString method for testing 
+      */
     @Override
     public String toString() {
         return "{" +
