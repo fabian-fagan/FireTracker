@@ -33,6 +33,12 @@ public class HomeController {
         // recieve data from data service and add to module
         model.addAttribute("ausStats", fireDataService.getAusStats());
         model.addAttribute("totalAUS", fireDataService.getTotalAusFires());
+        model.addAttribute("westernTotal", fireDataService.getAreaTotal("Western Australia"));
+        model.addAttribute("northernTotal", fireDataService.getAreaTotal("Northern Territory"));
+        model.addAttribute("southTotal", fireDataService.getAreaTotal("South Australia"));
+        model.addAttribute("queensTotal", fireDataService.getAreaTotal("Queensland"));
+        model.addAttribute("nswTotal", fireDataService.getAreaTotal("NSW"));
+        model.addAttribute("tasTotal", fireDataService.getAreaTotal("Tasmania"));
         return "aus";
     }
 
@@ -41,6 +47,8 @@ public class HomeController {
         // recieve data from data service and add to module
         model.addAttribute("nzStats", fireDataService.getNzStats());
         model.addAttribute("totalNZ", fireDataService.getTotalNzFires());
+        model.addAttribute("northTotal", fireDataService.getAreaTotal("North Island"));
+        model.addAttribute("southTotal", fireDataService.getAreaTotal("South Island"));
         return "nz";
     }
 
@@ -49,6 +57,10 @@ public class HomeController {
         // recieve data from data service and add to module
         model.addAttribute("piStats", fireDataService.getPiStats());
         model.addAttribute("totalPi", fireDataService.getTotalPIFires());
+        model.addAttribute("newcalTotal", fireDataService.getAreaTotal("New Calidonia/Vanuatu"));
+        model.addAttribute("fijiTotal", fireDataService.getAreaTotal("Fiji"));
+        model.addAttribute("samoaTotal", fireDataService.getAreaTotal("Samoa"));
+        model.addAttribute("tongaTotal", fireDataService.getAreaTotal("Tonga/Niue/Cook Islands"));
         return "pi";
     }
 }

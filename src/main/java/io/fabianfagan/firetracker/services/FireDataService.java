@@ -28,11 +28,14 @@ import java.net.URI;
 @Service
 public class FireDataService {
 
-    private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";
-    private List<FireStats> allStats = new ArrayList<>();
+    private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";  
+    //Fields
+    private List<FireStats>[] listOfStats = new List[9]; 
+    private List<FireStats> allFireStats = new ArrayList<>();
     private List<FireStats> ausStats = new ArrayList<>();
     private List<FireStats> nzStats = new ArrayList<>();
     private List<FireStats> piStats = new ArrayList<>();
+    private int[] areaTotals = new int[13];
     private int totalAusFires = 0;
     private int totalNZFires = 0;
     private int totalPIFires = 0;
@@ -72,14 +75,12 @@ public class FireDataService {
                     fireStat.setCountry("PI");
                     newPiStats.add(fireStat);
                     this.totalPIFires++;
-                } 
-                else {// NZ
+                } else {// NZ
                     fireStat.setCountry("NZ");
                     newNzStats.add(fireStat);
                     this.totalNZFires++;
                 }
-            } 
-            else {// Australia
+            } else {// Australia
                 fireStat.setCountry("AUS");
                 newAusStats.add(fireStat);
                 this.totalAusFires++;
@@ -95,7 +96,7 @@ public class FireDataService {
             fireStat.setBrightness(record.get("brightness"));
             newAllStats.add(fireStat);
         }
-        this.allStats = newAllStats;
+        this.allFireStats = newAllStats;
         this.ausStats = newAusStats;
         this.nzStats = newNzStats;
         this.piStats = newPiStats;
@@ -106,7 +107,7 @@ public class FireDataService {
      */
 
     public List<FireStats> getAllStats() {
-        return this.allStats;
+        return this.allFireStats;
     }
 
     public List<FireStats> getAusStats() {
@@ -135,7 +136,8 @@ public class FireDataService {
 
     /**
      * Calculates the estimated area (state for AUS, north/south for NZ & island for
-     * PIs). Messy, but cheaper than calling a Geocoding API for every entry!
+     * PIs). Also tallys area totals. Messy, but cheaper than calling a Geocoding
+     * API for every entry!
      * 
      * @param lat
      * @param lon
@@ -146,52 +148,106 @@ public class FireDataService {
         double lon = Double.parseDouble(longitude);
         if (country.equals("NZ")) {
             if (lat > -41.33) {
+                this.areaTotals[0]++;
                 return "North Island";
-            } 
-            else {
+            } else {
+                this.areaTotals[1]++;
                 return "South Island";
             }
-        } 
-        else if (country.equals("PI")) {
+        } else if (country.equals("PI")) {
             if (lon < 177) {
-                return "New Calidonia";
+                this.areaTotals[2]++;
+                return "New Calidonia/Vanuatu";
             }
             if (lon > 177.00 && lon < 179.99) {
+                this.areaTotals[3]++;
                 return "Fiji";
             }
             if (lon > -172.8 && lat > 14.55) {
+                this.areaTotals[4]++;
                 return "Samoa";
-            } 
-            else {
+            } else {
+                this.areaTotals[5]++;
                 return "Tonga/Niue/Cook Islands";
             }
-        } 
-        else if (country.equals("AUS")) {
+        } else if (country.equals("AUS")) {
             if (lon < 129) {
+                this.areaTotals[6]++;
                 return "Western Australia";
             }
             if (lon > 129 && lon < 141) {
                 if (lat > -26) {
+                    this.areaTotals[7]++;
                     return "Northern Territory";
-                } 
-                else {
+                } else {
+                    this.areaTotals[8]++;
                     return "South Australia";
                 }
             }
             if (lon > 141) {
                 if (lat > -28.55) {
+                    this.areaTotals[9]++;
                     return "Queensland";
-                } 
-                else {
+                } else {
+                    this.areaTotals[10]++;
                     return "NSW";
                 }
-            } 
-            else if (lat < -39.00) {
+            } else if (lat < -39.00) {
+                this.areaTotals[11]++;
                 return "Tasmania";
             }
         }
-
+        this.areaTotals[12]++;
         return "Unknown";
+    }
+
+
+    /**
+     * Return the total amount of fires in the requested area.
+     * @param area to find total
+     * @return total in area
+     */
+    public int getAreaTotal(String area) {
+        switch (area) {
+            case "North Island":
+            return this.areaTotals[0];           
+        
+            case "South Island":
+            return this.areaTotals[1];
+               
+            case "New Calidonia/Vanuatu":
+            return this.areaTotals[2];
+                         
+            case "Fiji":
+            return this.areaTotals[3];            
+
+            case "Samoa":
+            return this.areaTotals[4];           
+
+            case "Tonga/Niue/Cook Islands":
+            return this.areaTotals[5];
+               
+            case "Western Australia":
+            return this.areaTotals[6];
+               
+            case "Northern Territory":
+            return this.areaTotals[7];              
+
+            case "South Australia":
+            return this.areaTotals[8];
+               
+            case "Queensland":
+            return this.areaTotals[9];
+               
+            case "NSW":
+            return this.areaTotals[10];
+               
+            case "Tasmania":
+            return this.areaTotals[11];    
+            
+            default:
+            return this.areaTotals[12]; //Unknown area
+        }
     }
 
 }
