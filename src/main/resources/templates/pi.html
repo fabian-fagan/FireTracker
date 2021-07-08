@@ -7,11 +7,22 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <style type="text/css">
-            .w3-container {
-                display: flex
-            }
-        </style>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" language="javascript"
+        src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        $(document).ready(function () {
+            $('#dataTable').DataTable();
+        });
+    </script>
+
+    <style type="text/css">
+        .w3-container {
+            display: flex
+        }
+    </style>
 </head>
 <div class="container">
 
@@ -25,28 +36,35 @@
                 <div class="jumbotron text-center col-md-1.99">
                     <h1 class="display-4  text-danger" th:text="${totalPi}"></h1>
                     <p>Total</p>
-                </div>             
+                </div>
             </div>
         </div>
 
-        <div class="p-3 mb-2 bg-secondary ">
-            <table class="table table-hover text-white">
-                <tr>
-                    <th>Area</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>Brightness</th>
-                    <th>Time Detected</th>
-                </tr>
-                <tr th:each="fireStat : ${piStats}">
-                    <td th:text="${fireStat.area}"></td>
-                    <td th:text="${fireStat.lat}"></td>
-                    <td th:text="${fireStat.lon}"></td>
-                    <td th:text="${fireStat.brightness}">0</td>
-                    <td th:text="${fireStat.time}">0</td>
-                </tr>
-            </table>
+        <div class="p-3 mb-2 bg-secondary">
+            <table class="table table-striped table-hover " id="dataTable" data-page-length='25'
+                data-order='[[0, "desc"]]'>
+                <thead class="text-white">
+                    <tr>
 
+                        <th scope="col">Area</th>
+                        <th scope="col">Latitude</th>
+                        <th scope="col">Longitude</th>
+                        <th scope="col">Brightness</th>
+                        <th scope="col">Time Detected</th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:each="fireStat :${piStats}">
+                        <td th:text="${fireStat.area}"></td>
+                        <td th:text="${fireStat.lat}"></td>
+                        <td th:text="${fireStat.lon}"></td>
+                        <td th:text="${fireStat.brightness}"></td>
+                        <td th:text="${fireStat.time}"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </body>
 </div>

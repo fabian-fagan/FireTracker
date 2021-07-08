@@ -27,10 +27,9 @@ import java.net.URI;
  */
 @Service
 public class FireDataService {
-
-    private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";  
+    private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv"; 
     //Fields
-    private List<FireStats>[] listOfStats = new List[9]; 
+    ArrayList<Integer>[] al = new ArrayList[5];
     private List<FireStats> allFireStats = new ArrayList<>();
     private List<FireStats> ausStats = new ArrayList<>();
     private List<FireStats> nzStats = new ArrayList<>();
@@ -60,7 +59,7 @@ public class FireDataService {
         // create request
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(FIRE_DATA_URL)).build();
 
-        // get response (data)
+        // get response (fire data)
         HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
         StringReader csvBodyReader = new StringReader(httpResponse.body());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
