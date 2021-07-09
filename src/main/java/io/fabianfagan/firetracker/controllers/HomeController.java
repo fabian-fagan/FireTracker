@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import io.fabianfagan.firetracker.services.FireDataService;
 
 /**
- * Controller for adding data to model and displaying on home page.
+ * Controller for adding data to model and displaying on pages.
  * 
  * @author Fabian Fagan
  */
@@ -17,6 +17,7 @@ public class HomeController {
 
     @Autowired
     FireDataService fireDataService;
+    
 
     @GetMapping("/") // root page
     public String home(Model model) {
@@ -63,4 +64,13 @@ public class HomeController {
         model.addAttribute("tongaTotal", fireDataService.getAreaTotal("Tonga/Niue/Cook Islands"));
         return "pi";
     }
+     
+    @GetMapping("/INFO") // Info for 1 fire (test)
+    public String info(Model model) {
+        // recieve data from data service and add to module
+        String id = fireDataService.getAllStats().get(0).toString();
+        model.addAttribute("allInfo", fireDataService.getPiStats());
+        return "info";
+    }
+
 }

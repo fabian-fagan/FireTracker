@@ -12,6 +12,7 @@ public class FireStats {
     private String lon; 
     private String time; 
     private String brightness;
+    private String id; 
 
      
     /**
@@ -64,6 +65,14 @@ public class FireStats {
     public void setLat(String lat) {
         this.lat = lat;
     }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
   
      /**
       * ToString method for testing 
@@ -76,6 +85,7 @@ public class FireStats {
             ", lon='" + getLon() + "'" +
             ", time='" + getTime() + "'" +
             ", brightness='" + getBrightness() + "'" +
+            ", ID='" + getId() + "'" +
             "}";
     }
     

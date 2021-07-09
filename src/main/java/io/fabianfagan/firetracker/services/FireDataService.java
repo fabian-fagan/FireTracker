@@ -29,7 +29,6 @@ import java.net.URI;
 public class FireDataService {
     private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv"; 
     //Fields
-    ArrayList<Integer>[] al = new ArrayList[5];
     private List<FireStats> allFireStats = new ArrayList<>();
     private List<FireStats> ausStats = new ArrayList<>();
     private List<FireStats> nzStats = new ArrayList<>();
@@ -38,6 +37,7 @@ public class FireDataService {
     private int totalAusFires = 0;
     private int totalNZFires = 0;
     private int totalPIFires = 0;
+    
 
     /**
      * Uses HTTP request/response to fetch data on active fires from US Gov website:
@@ -65,6 +65,8 @@ public class FireDataService {
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
 
         // create a FireStat object for each value and add to list
+        String date = java.time.LocalDate.now().toString(); 
+        int currentFireID = 0; 
         for (CSVRecord record : records) {
             FireStats fireStat = new FireStats();
 
@@ -93,6 +95,7 @@ public class FireDataService {
             fireStat.setLon(lon);
             fireStat.setTime(record.get("acq_time"));
             fireStat.setBrightness(record.get("brightness"));
+            fireStat.setId(date + ":" + currentFireID++);
             newAllStats.add(fireStat);
         }
         this.allFireStats = newAllStats;
