@@ -12,12 +12,12 @@ import io.fabianfagan.firetracker.services.FireDataService;
  * 
  * @author Fabian Fagan
  */
-@Controller
-public class HomeController {
+@Controller 
+public class MainController {
 
     @Autowired
     FireDataService fireDataService;
-    
+     
 
     @GetMapping("/") // root page
     public String home(Model model) {

@@ -11,17 +11,17 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Service; 
 
-import io.fabianfagan.firetracker.modules.FireStats;
+import io.fabianfagan.firetracker.modules.Fire;
 
-import java.io.IOException;
+import java.io.IOException; 
 import java.io.StringReader;
 import java.net.URI;
 
 /**
  * Service class used to fetch the data of current active fires. Creates lists
- * of FireStats objects and gathers fire totals.
+ * of Fire objects, gathers fire totals and calculates fire areas.
  * 
  * @author Fabian Fagan
  */
@@ -29,10 +29,10 @@ import java.net.URI;
 public class FireDataService {
     private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv"; 
     //Fields
-    private List<FireStats> allFireStats = new ArrayList<>();
-    private List<FireStats> ausStats = new ArrayList<>();
-    private List<FireStats> nzStats = new ArrayList<>();
-    private List<FireStats> piStats = new ArrayList<>();
+    private List<Fire> allFires = new ArrayList<>();
+    private List<Fire> ausFires = new ArrayList<>();
+    private List<Fire> nzFires = new ArrayList<>();
+    private List<Fire> piFires = new ArrayList<>();
     private int[] areaTotals = new int[13];
     private int totalAusFires = 0;
     private int totalNZFires = 0;
@@ -48,10 +48,10 @@ public class FireDataService {
     @Scheduled(cron = "* * 1 * * *") // schedules to update each day
     public void fetchFireData() throws IOException, InterruptedException {
         // Create new lists for concurrency issues
-        List<FireStats> newAllStats = new ArrayList<>();
-        List<FireStats> newAusStats = new ArrayList<>();
-        List<FireStats> newNzStats = new ArrayList<>();
-        List<FireStats> newPiStats = new ArrayList<>();
+        List<Fire> newAllFires = new ArrayList<>();
+        List<Fire> newAusFires = new ArrayList<>();
+        List<Fire> newNzFires = new ArrayList<>();
+        List<Fire> newPiFires = new ArrayList<>();
 
         // create new client
         HttpClient client = HttpClient.newHttpClient();
@@ -64,65 +64,65 @@ public class FireDataService {
         StringReader csvBodyReader = new StringReader(httpResponse.body());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
 
-        // create a FireStat object for each value and add to list
+        // create a Fire object for each value and add to list
         String date = java.time.LocalDate.now().toString(); 
         int currentFireID = 0; 
         for (CSVRecord record : records) {
-            FireStats fireStat = new FireStats();
+            Fire fire = new Fire();
 
             // determine country based on longitude and latitude
             if (Double.parseDouble(record.get("longitude")) > 153.637) { // more east than Australia
                 if (Double.parseDouble(record.get("latitude")) > -34.394) { // more north than NZ
-                    fireStat.setCountry("PI");
-                    newPiStats.add(fireStat);
+                    fire.setCountry("PI");
+                    newPiFires.add(fire);
                     this.totalPIFires++;
                 } else {// NZ
-                    fireStat.setCountry("NZ");
-                    newNzStats.add(fireStat);
+                    fire.setCountry("NZ");
+                    newNzFires.add(fire);
                     this.totalNZFires++;
                 }
             } else {// Australia
-                fireStat.setCountry("AUS");
-                newAusStats.add(fireStat);
+                fire.setCountry("AUS");
+                newAusFires.add(fire);
                 this.totalAusFires++;
             }
 
             // add other fields & add to list
             String lat = record.get("latitude");
             String lon = record.get("longitude");
-            fireStat.setArea(calculateArea(lat, lon, fireStat.getCountry()));
-            fireStat.setLat(lat);
-            fireStat.setLon(lon);
-            fireStat.setTime(record.get("acq_time"));
-            fireStat.setBrightness(record.get("brightness"));
-            fireStat.setId(date + ":" + currentFireID++);
-            newAllStats.add(fireStat);
+            fire.setArea(calculateArea(lat, lon, fire.getCountry()));
+            fire.setLat(lat);
+            fire.setLon(lon);
+            fire.setTime(record.get("acq_time"));
+            fire.setBrightness(record.get("brightness"));
+            fire.setId(date + ":" + currentFireID++);
+            newAllFires.add(fire);
         }
-        this.allFireStats = newAllStats;
-        this.ausStats = newAusStats;
-        this.nzStats = newNzStats;
-        this.piStats = newPiStats;
+        this.allFires = newAllFires;
+        this.ausFires = newAusFires;
+        this.nzFires = newNzFires;
+        this.piFires = newPiFires;
     }
 
     /**
      * Getter methods for values used by the HomeController to add to module.
      */
 
-    public List<FireStats> getAllStats() {
-        return this.allFireStats;
+    public List<Fire> getAllStats() {
+        return this.allFires;
     }
 
-    public List<FireStats> getAusStats() {
-        return this.ausStats;
+    public List<Fire> getAusStats() {
+        return this.ausFires;
     }
 
-    public List<FireStats> getNzStats() {
-        return this.nzStats;
+    public List<Fire> getNzStats() {
+        return this.nzFires;
     }
 
-    public List<FireStats> getPiStats() {
-        return this.piStats;
-    }
+    public List<Fire> getPiStats() {
+        return this.piFires;
+    } 
 
     public int getTotalNzFires() {
         return this.totalNZFires;

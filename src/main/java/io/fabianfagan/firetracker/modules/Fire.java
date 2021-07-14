@@ -4,12 +4,12 @@ package io.fabianfagan.firetracker.modules;
  * An object for holding stats about a singular fire from the dataset. 
  * (country, area, latitude, longitude, time, brightness). 
  * @author Fabian Fagan
- */
-public class FireStats {
+ */ 
+public class Fire { 
     private String country;
     private String area; 
     private String lat;
-    private String lon; 
+    private String lon;  
     private String time; 
     private String brightness;
     private String id; 
