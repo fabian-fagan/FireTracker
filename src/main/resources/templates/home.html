@@ -79,30 +79,20 @@
                         <th scope="col">Longitude</th>
                         <th scope="col">Brightness</th>
                         <th scope="col">Time Detected</th>
-                        <th scope="col">MAP</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     <tr th:each="fireStat :${fireStats}">
-
-                        <span id= "span_id" style="display: none;" th:text="${fireStat.id}"></span>
-
-                        
-
+                        <span id= "span_id" style="display: none;" th:text="${fireStat.id}"></span>                      
                         <td th:text="${fireStat.country}"></td>
                         <td th:text="${fireStat.lat}"></td>
                         <td th:text="${fireStat.lon}"></td>
                         <td th:text="${fireStat.brightness}"></td>
-                        <td th:text="${fireStat.time}"></td>                        
-                        <td><a href="info" onclick="location.href=this.href+'?id='+fireId;return false;">View</a></td>                
+                        <td th:text="${fireStat.time}"></td>                                                        
                     </tr>
                 </tbody>
             </table>
-            <script language="javascript" type="text/javascript">
-                var fireID = document.getElementById("span_id").innerHTML;
-                var fireId = $('#span_id').text() 
-                </script>
         </div>
     </body> 
 </div>

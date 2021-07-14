@@ -20,8 +20,8 @@ import java.io.StringReader;
 import java.net.URI;
 
 /**
- * Service class used to fetch the data of current active fires. Creates a list
- * of FireStats objects.
+ * Service class used to fetch the data of current active fires. Creates lists
+ * of FireStats objects and gathers fire totals.
  * 
  * @author Fabian Fagan
  */

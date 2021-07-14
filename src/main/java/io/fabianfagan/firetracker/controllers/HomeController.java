@@ -64,13 +64,5 @@ public class HomeController {
         model.addAttribute("tongaTotal", fireDataService.getAreaTotal("Tonga/Niue/Cook Islands"));
         return "pi";
     }
-     
-    @GetMapping("/INFO") // Info for 1 fire (test)
-    public String info(Model model) {
-        // recieve data from data service and add to module
-        String id = fireDataService.getAllStats().get(0).toString();
-        model.addAttribute("allInfo", fireDataService.getPiStats());
-        return "info";
-    }
 
 }
