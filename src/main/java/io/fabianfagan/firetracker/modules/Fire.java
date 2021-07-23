@@ -81,6 +81,7 @@ public class Fire {
     public String toString() {
         return "{" +
             " country='" + getCountry() + "'" +
+            ", area='" + getArea() + "'" +
             ", lat='" + getLat() + "'" +
             ", lon='" + getLon() + "'" +
             ", time='" + getTime() + "'" +
