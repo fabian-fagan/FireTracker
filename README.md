@@ -6,3 +6,11 @@ Created with Spring and utilizing the MVC design pattern, this webapp gathers cu
 calcuating location areas based on latitude and longitude and gathering totals for each country. The
 data is automatically scheduled to fetch and update daily. 
 
+*-Home-*
+
+![home](https://github.com/fabian-fagan/FireTracker/blob/master/images/home.PNG)
+
+*-Australia fire page-* 
+
+![aus](https://github.com/fabian-fagan/FireTracker/blob/master/images/AUS.PNG)
+
