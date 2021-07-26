@@ -1,7 +1,7 @@
 package io.fabianfagan.firetracker.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,12 @@ import io.fabianfagan.firetracker.modules.Fire;
 import io.fabianfagan.firetracker.services.FireDataService;
 
 /**
- * Controller for adding data to model and displaying on pages.
+ * Controller for the home page and specific country pages. 
  * 
  * @author Fabian Fagan
  */
 @Controller 
-public class MainController {
+public class HomeController { 
 
     @Autowired
     FireDataService fireDataService;
@@ -28,7 +28,7 @@ public class MainController {
 
     @GetMapping("/") // root page
     public String home(Model model) {
-        // recieve data from data service and add to module
+        // recieve data from data service and add to model
         model.addAttribute("fireStats", fireDataService.getAllStats());
         model.addAttribute("totalNZ", fireDataService.getTotalNzFires());
         model.addAttribute("totalAUS", fireDataService.getTotalAusFires());
@@ -38,7 +38,7 @@ public class MainController {
 
     @GetMapping("/AUS") // All AUS info page
     public String aus(Model model) {
-        // recieve data from data service and add to module
+        // recieve data from data service and add to model
         model.addAttribute("ausStats", fireDataService.getAusStats());
         model.addAttribute("totalAUS", fireDataService.getTotalAusFires());
         model.addAttribute("westernTotal", fireDataService.getAreaTotal("Western Australia"));
@@ -52,7 +52,7 @@ public class MainController {
 
     @GetMapping("/NZ") // All NZ info page
     public String nz(Model model) {
-        // recieve data from data service and add to module
+        // recieve data from data service and add to model
         model.addAttribute("nzStats", fireDataService.getNzStats());
         model.addAttribute("totalNZ", fireDataService.getTotalNzFires());
         model.addAttribute("northTotal", fireDataService.getAreaTotal("North Island"));
@@ -62,7 +62,7 @@ public class MainController {
 
     @GetMapping("/PI") // All PI info page
     public String pi(Model model) {
-        // recieve data from data service and add to module
+        // recieve data from data service and add to model
         model.addAttribute("piStats", fireDataService.getPiStats());
         model.addAttribute("totalPi", fireDataService.getTotalPIFires());
         model.addAttribute("newcalTotal", fireDataService.getAreaTotal("New Calidonia/Vanuatu"));
@@ -72,11 +72,11 @@ public class MainController {
         return "pi";
     }
 
-    @GetMapping("/{id}") // Single fire info page
+    @GetMapping("/{id}") // Single fire info print page
     public ResponseEntity<String> info(Model model, @PathVariable String id) {
         //Return the fire info based on ID 
         List<Fire> allFires = fireDataService.getAllStats();
-        Fire requestedFire = null; 
+        Fire requestedFire = new Fire(); 
         for (Fire fire : allFires) {
             if (fire.getId().equals(id)) {
                 requestedFire = fire; 
@@ -84,5 +84,4 @@ public class MainController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(requestedFire.toString());
     }
-
 }

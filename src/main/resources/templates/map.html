@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset='utf-8' />
+    <title>Map View</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.css' rel='stylesheet' />
+
+    <script src='https://tiles.locationiq.com/v3/js/liq-styles-ctrl-gl.js?v=0.1.8'></script>
+
+    <link href='https://tiles.locationiq.com/v3/css/liq-styles-ctrl-gl.css?v=0.1.8' rel='stylesheet' />
+    <style>
+        body {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #map {
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <style>  
+       
+       #markerWithExternalCss {
+                background-image: url('https://flyclipart.com/downloadpage/images/cartoon-fire-png-free-download-clip-art-760339.png/760339');
+                background-size: cover;
+                width: 100px;
+                height: 100px;
+                cursor: pointer;
+            }
+
+    </style>
+    <div id='map'></div>
+
+    
+    <script th:inline="javascript">
+        // Get the requested fire coordinates       
+         /*<![CDATA[*/
+        
+           var lat = /*[[${requestedFireLat}]]*/ 'default';
+           var lon = /*[[${requestedFireLon}]]*/ 'default';
+        
+        /*]]>*/
+
+        locationiq.key = 'pk.5418f387e4053f12ab2e888c7ef9d335';
+        //Define the map and configure the map's theme
+        var map = new mapboxgl.Map({
+            container: 'map',
+            attributionControl: false, //need this to show a compact attribution icon (i) instead of the whole text
+            zoom: 12,
+            center: [lon, lat] 
+        });
+
+        //Add Navigation controls to the map to the top-right corner of the map
+        var nav = new mapboxgl.NavigationControl();
+            map.addControl(nav, 'top-right');
+
+        //Add a 'full screen' button to the map
+        map.addControl(new mapboxgl.FullscreenControl());
+        
+        //Add a Scale to the map
+        map.addControl(new mapboxgl.ScaleControl({
+                maxWidth: 80,
+                unit: 'metric' 
+            }));
+
+        //Optional map styles
+        var layerStyles = {
+            "Streets": "streets/vector",
+            "Dark": "dark/vector",
+            "Light": "light/vector"
+        };
+
+        map.addControl(new locationiqLayerControl({
+            key: locationiq.key,
+            layerStyles: layerStyles
+        }), 'top-left');
+
+
+        //Marker
+        var el = document.createElement('div');
+        el.id = 'markerWithExternalCss';
+        // finally, create the marker
+        var markerWithExternalCss = new mapboxgl.Marker(el)
+             .setLngLat([lon, lat])
+             .addTo(map);
+
+    </script>
+</body>
+
+</html>

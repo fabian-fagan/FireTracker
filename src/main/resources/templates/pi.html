@@ -51,6 +51,7 @@
                         <th scope="col">Longitude</th>
                         <th scope="col">Brightness</th>
                         <th scope="col">Time Detected</th>
+                        <th scope="col">Map</th>
 
                     </tr>
                 </thead>
@@ -62,6 +63,7 @@
                         <td th:text="${fireStat.lon}"></td>
                         <td th:text="${fireStat.brightness}"></td>
                         <td th:text="${fireStat.time}"></td>
+                        <td><a th:href="@{map/{id}(id=${fireStat.id})}">view</a></td>  
                     </tr>
                 </tbody>
             </table>
