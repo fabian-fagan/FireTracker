@@ -102,6 +102,7 @@ public class FireDataService {
         this.ausFires = newAusFires;
         this.nzFires = newNzFires;
         this.piFires = newPiFires;
+        trimData(); 
     }
 
     /**
@@ -134,6 +135,45 @@ public class FireDataService {
 
     public int getTotalPIFires() {
         return this.totalPIFires;
+    }
+
+    /**
+     * The raw fetched data often lists more than one fire for the same area - so this method 
+     * removes Fire instances from our data which are clearly duplicates. 
+     * eg. (102.764, 24.554) is the same fire as (102.763, 24.552)
+     */
+    private void trimData() {
+        //Find all duplicates
+        List<Fire> duplicates = new ArrayList<>(); 
+        List<Fire> allFiresTrimmed = this.allFires; 
+        //for each Fire
+        for (int i =0; i < this.allFires.size(); i++) {
+           Fire currentFire = this.allFires.get(i); 
+           for (int p = 0; p < this.allFires.size(); p++) {
+               Fire comparingFire = this.allFires.get(p);
+               //If Lat is very similar to another Fires lat
+               if (Math.abs(Double.parseDouble(currentFire.getLat()) - Double.parseDouble(comparingFire.getLat())) < 0.005) {
+                   //Remove duplicates
+                   duplicates.add(this.allFires.get(p)); 
+                   allFiresTrimmed.remove(p); 
+               }
+           }
+        }
+        System.out.println(duplicates.size() + " All Duplicates found");
+        this.allFires = allFiresTrimmed; 
+
+        //Find AUS duplicates
+        System.out.println(this.ausFires.size() + " before");
+        List<Fire> ausTrimmed = new ArrayList<>();; 
+        for (Fire fire : this.ausFires) {
+           for (Fire comparing : duplicates) {
+               if (fire == comparing) {
+                  ausTrimmed.add(fire); 
+               }
+           }
+        }
+        this.ausFires = ausTrimmed;  
+        System.out.println(this.ausFires.size() + " after");         
     }
 
     /**

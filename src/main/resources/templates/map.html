@@ -56,7 +56,7 @@
         var map = new mapboxgl.Map({
             container: 'map',
             attributionControl: false, //need this to show a compact attribution icon (i) instead of the whole text
-            zoom: 12,
+            zoom: 10,
             center: [lon, lat] 
         });
 
@@ -89,7 +89,6 @@
         //Marker
         var el = document.createElement('div');
         el.id = 'markerWithExternalCss';
-        // finally, create the marker
         var markerWithExternalCss = new mapboxgl.Marker(el)
              .setLngLat([lon, lat])
              .addTo(map);
