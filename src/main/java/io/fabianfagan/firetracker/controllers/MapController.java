@@ -46,6 +46,7 @@ public class MapController {
         //Add to model      
         model.addAttribute("requestedFireLat", -36.8307293); 
         model.addAttribute("requestedFireLon", 174.7456027);
+        model.addAttribute("jsonArray", fireDataService.allFiresToJson());
         return "map"; 
     }
     

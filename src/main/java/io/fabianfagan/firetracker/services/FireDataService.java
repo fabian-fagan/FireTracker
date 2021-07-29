@@ -8,14 +8,19 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service; 
+import org.springframework.stereotype.Service;
 
 import io.fabianfagan.firetracker.modules.Fire;
 
-import java.io.IOException; 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 
@@ -27,8 +32,8 @@ import java.net.URI;
  */
 @Service
 public class FireDataService {
-    private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv"; 
-    //Fields
+    private static String FIRE_DATA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Australia_NewZealand_24h.csv";
+    // Fields
     private List<Fire> allFires = new ArrayList<>();
     private List<Fire> ausFires = new ArrayList<>();
     private List<Fire> nzFires = new ArrayList<>();
@@ -37,7 +42,6 @@ public class FireDataService {
     private int totalAusFires = 0;
     private int totalNZFires = 0;
     private int totalPIFires = 0;
-    
 
     /**
      * Uses HTTP request/response to fetch data on active fires from US Gov website:
@@ -64,45 +68,46 @@ public class FireDataService {
         StringReader csvBodyReader = new StringReader(httpResponse.body());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
 
-        // create a Fire object for each value and add to list
-        String date = java.time.LocalDate.now().toString(); 
-        int currentFireID = 0; 
+        // create a Fire object for each non duplicate value and add to lists
+        String date = java.time.LocalDate.now().toString();
+        int currentFireID = 0;
         for (CSVRecord record : records) {
             Fire fire = new Fire();
-
-            // determine country based on longitude and latitude
-            if (Double.parseDouble(record.get("longitude")) > 153.637) { // more east than Australia
-                if (Double.parseDouble(record.get("latitude")) > -34.394) { // more north than NZ
-                    fire.setCountry("PI");
-                    newPiFires.add(fire);
-                    this.totalPIFires++;
-                } else {// NZ
-                    fire.setCountry("NZ");
-                    newNzFires.add(fire);
-                    this.totalNZFires++;
-                }
-            } else {// Australia
-                fire.setCountry("AUS");
-                newAusFires.add(fire);
-                this.totalAusFires++;
-            }
-
-            // add other fields & add to list
             String lat = record.get("latitude");
             String lon = record.get("longitude");
-            fire.setArea(calculateArea(lat, lon, fire.getCountry()));
-            fire.setLat(lat);
-            fire.setLon(lon);
-            fire.setTime(record.get("acq_time"));
-            fire.setBrightness(record.get("brightness"));
-            fire.setId(date + ":" + currentFireID++);
-            newAllFires.add(fire);
+            if (!fireAlreadyExistsAtCoordinate(lat, lon, newAllFires)) {
+                // determine country based on longitude and latitude
+                if (Double.parseDouble(lon) > 153.637) { // more east than Australia
+                    if (Double.parseDouble(lat) > -34.394) { // more north than NZ
+                        fire.setCountry("PI");
+                        newPiFires.add(fire);
+                        this.totalPIFires++;
+                    } else {// NZ
+                        fire.setCountry("NZ");
+                        newNzFires.add(fire);
+                        this.totalNZFires++;
+                    }
+                } else {// Australia
+                    fire.setCountry("AUS");
+                    newAusFires.add(fire);
+                    this.totalAusFires++;
+                }
+
+                // add other fields & add to list
+                fire.setArea(calculateArea(lat, lon, fire.getCountry()));
+                fire.setLat(lat);
+                fire.setLon(lon);
+                fire.setTime(record.get("acq_time"));
+                fire.setBrightness(record.get("brightness"));
+                fire.setId(date + ":" + currentFireID++);
+                newAllFires.add(fire);
+            }
         }
         this.allFires = newAllFires;
         this.ausFires = newAusFires;
         this.nzFires = newNzFires;
         this.piFires = newPiFires;
-        trimData(); 
+        allFiresToJson();
     }
 
     /**
@@ -123,7 +128,7 @@ public class FireDataService {
 
     public List<Fire> getPiStats() {
         return this.piFires;
-    } 
+    }
 
     public int getTotalNzFires() {
         return this.totalNZFires;
@@ -138,42 +143,25 @@ public class FireDataService {
     }
 
     /**
-     * The raw fetched data often lists more than one fire for the same area - so this method 
-     * removes Fire instances from our data which are clearly duplicates. 
-     * eg. (102.764, 24.554) is the same fire as (102.763, 24.552)
+     * The raw fetched data often lists more than one fire for the same area - so
+     * this method checks if a given area has already recorded a Fire. eg. (102.764,
+     * 24.554) is the same fire as (102.763, 24.552)
+     * 
+     * @param List<Fire>
      */
-    private void trimData() {
-        //Find all duplicates
-        List<Fire> duplicates = new ArrayList<>(); 
-        List<Fire> allFiresTrimmed = this.allFires; 
-        //for each Fire
-        for (int i =0; i < this.allFires.size(); i++) {
-           Fire currentFire = this.allFires.get(i); 
-           for (int p = 0; p < this.allFires.size(); p++) {
-               Fire comparingFire = this.allFires.get(p);
-               //If Lat is very similar to another Fires lat
-               if (Math.abs(Double.parseDouble(currentFire.getLat()) - Double.parseDouble(comparingFire.getLat())) < 0.005) {
-                   //Remove duplicates
-                   duplicates.add(this.allFires.get(p)); 
-                   allFiresTrimmed.remove(p); 
-               }
-           }
+    private Boolean fireAlreadyExistsAtCoordinate(String lat, String lon, List<Fire> fires) {
+        Double latitudeToCheck = Double.parseDouble(lat);
+        Double longitudeToCheck = Double.parseDouble(lon);
+        for (Fire fire : fires) {
+            Double currentFireLat = Double.parseDouble(fire.getLat());
+            Double currentFireLon = Double.parseDouble(fire.getLon());
+            // If areas are very close, return true
+            if ((Math.abs(currentFireLat - latitudeToCheck) < 0.005)
+                    && (Math.abs(currentFireLon - longitudeToCheck) < 0.005)) {
+                return true;
+            }
         }
-        System.out.println(duplicates.size() + " All Duplicates found");
-        this.allFires = allFiresTrimmed; 
-
-        //Find AUS duplicates
-        System.out.println(this.ausFires.size() + " before");
-        List<Fire> ausTrimmed = new ArrayList<>();; 
-        for (Fire fire : this.ausFires) {
-           for (Fire comparing : duplicates) {
-               if (fire == comparing) {
-                  ausTrimmed.add(fire); 
-               }
-           }
-        }
-        this.ausFires = ausTrimmed;  
-        System.out.println(this.ausFires.size() + " after");         
+        return false;
     }
 
     /**
@@ -243,53 +231,71 @@ public class FireDataService {
         return "Unknown";
     }
 
-
     /**
      * Return the total amount of fires in the requested area.
+     * 
      * @param area to find total
      * @return total in area
      */
     public int getAreaTotal(String area) {
         switch (area) {
             case "North Island":
-            return this.areaTotals[0];           
-        
+                return this.areaTotals[0];
+
             case "South Island":
-            return this.areaTotals[1];
-               
+                return this.areaTotals[1];
+
             case "New Calidonia/Vanuatu":
-            return this.areaTotals[2];
-                         
+                return this.areaTotals[2];
+
             case "Fiji":
-            return this.areaTotals[3];            
+                return this.areaTotals[3];
 
             case "Samoa":
-            return this.areaTotals[4];           
+                return this.areaTotals[4];
 
             case "Tonga/Niue/Cook Islands":
-            return this.areaTotals[5];
-               
+                return this.areaTotals[5];
+
             case "Western Australia":
-            return this.areaTotals[6];
-               
+                return this.areaTotals[6];
+
             case "Northern Territory":
-            return this.areaTotals[7];              
+                return this.areaTotals[7];
 
             case "South Australia":
-            return this.areaTotals[8];
-               
+                return this.areaTotals[8];
+
             case "Queensland":
-            return this.areaTotals[9];
-               
+                return this.areaTotals[9];
+
             case "NSW":
-            return this.areaTotals[10];
-               
+                return this.areaTotals[10];
+
             case "Tasmania":
-            return this.areaTotals[11];    
-            
+                return this.areaTotals[11];
+
             default:
-            return this.areaTotals[12]; //Unknown area
+                return this.areaTotals[12]; // Unknown area
         }
+    }
+     /**
+      * Convert all Fire objects into a JSON Array.
+      * @return JSON Array
+      * @throws JsonProcessingException
+      */
+    public String allFiresToJson() throws JsonProcessingException {    
+        ObjectMapper mapper = new ObjectMapper();
+        List<ObjectNode> jsonObjects = new ArrayList<>(); 
+        for (Fire fire : this.allFires) { 
+         ObjectNode f = mapper.createObjectNode();
+         f.put("lat", fire.getLat());
+         f.put("lon", fire.getLon());
+         jsonObjects.add(f); 
+        }
+        ArrayNode arrayNode = mapper.createArrayNode();
+        arrayNode.addAll(jsonObjects);
+        return arrayNode.toString(); 
     }
 
 }

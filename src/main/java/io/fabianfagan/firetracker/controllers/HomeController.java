@@ -28,7 +28,7 @@ public class HomeController {
 
     @GetMapping("/") // root page
     public String home(Model model) {
-        // recieve data from data service and add to model
+        // receive data from data service and add to model
         model.addAttribute("fireStats", fireDataService.getAllStats());
         model.addAttribute("totalNZ", fireDataService.getTotalNzFires());
         model.addAttribute("totalAUS", fireDataService.getTotalAusFires());
@@ -38,7 +38,7 @@ public class HomeController {
 
     @GetMapping("/AUS") // All AUS info page
     public String aus(Model model) {
-        // recieve data from data service and add to model
+        // receive data from data service and add to model
         model.addAttribute("ausStats", fireDataService.getAusStats());
         model.addAttribute("totalAUS", fireDataService.getTotalAusFires());
         model.addAttribute("westernTotal", fireDataService.getAreaTotal("Western Australia"));
@@ -52,7 +52,7 @@ public class HomeController {
 
     @GetMapping("/NZ") // All NZ info page
     public String nz(Model model) {
-        // recieve data from data service and add to model
+        // receive data from data service and add to model
         model.addAttribute("nzStats", fireDataService.getNzStats());
         model.addAttribute("totalNZ", fireDataService.getTotalNzFires());
         model.addAttribute("northTotal", fireDataService.getAreaTotal("North Island"));
@@ -62,7 +62,7 @@ public class HomeController {
 
     @GetMapping("/PI") // All PI info page
     public String pi(Model model) {
-        // recieve data from data service and add to model
+        // receive data from data service and add to model
         model.addAttribute("piStats", fireDataService.getPiStats());
         model.addAttribute("totalPi", fireDataService.getTotalPIFires());
         model.addAttribute("newcalTotal", fireDataService.getAreaTotal("New Calidonia/Vanuatu"));

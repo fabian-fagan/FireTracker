@@ -28,27 +28,26 @@
 
 <body>
 
-    <style>  
-       
-       #markerWithExternalCss {
-                background-image: url('https://flyclipart.com/downloadpage/images/cartoon-fire-png-free-download-clip-art-760339.png/760339');
-                background-size: cover;
-                width: 100px;
-                height: 100px;
-                cursor: pointer;
-            }
-
+    <style>
+        #markerWithExternalCss {
+            background-image: url('https://flyclipart.com/downloadpage/images/cartoon-fire-png-free-download-clip-art-760339.png/760339');
+            background-size: cover;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
     </style>
     <div id='map'></div>
 
-    
+
     <script th:inline="javascript">
         // Get the requested fire coordinates       
-         /*<![CDATA[*/
-        
-           var lat = /*[[${requestedFireLat}]]*/ 'default';
-           var lon = /*[[${requestedFireLon}]]*/ 'default';
-        
+        /*<![CDATA[*/
+
+        var lat = /*[[${requestedFireLat}]]*/ 'default';
+        var lon = /*[[${requestedFireLon}]]*/ 'default';
+        var jsonArray = /*[[${jsonArray}]]*/ 'default';
+
         /*]]>*/
 
         locationiq.key = 'pk.5418f387e4053f12ab2e888c7ef9d335';
@@ -57,21 +56,21 @@
             container: 'map',
             attributionControl: false, //need this to show a compact attribution icon (i) instead of the whole text
             zoom: 10,
-            center: [lon, lat] 
+            center: [lon, lat]
         });
 
         //Add Navigation controls to the map to the top-right corner of the map
         var nav = new mapboxgl.NavigationControl();
-            map.addControl(nav, 'top-right');
+        map.addControl(nav, 'top-right');
 
         //Add a 'full screen' button to the map
         map.addControl(new mapboxgl.FullscreenControl());
-        
+
         //Add a Scale to the map
         map.addControl(new mapboxgl.ScaleControl({
-                maxWidth: 80,
-                unit: 'metric' 
-            }));
+            maxWidth: 80,
+            unit: 'metric'
+        }));
 
         //Optional map styles
         var layerStyles = {
@@ -85,14 +84,26 @@
             layerStyles: layerStyles
         }), 'top-left');
 
-
-        //Marker
-        var el = document.createElement('div');
-        el.id = 'markerWithExternalCss';
-        var markerWithExternalCss = new mapboxgl.Marker(el)
-             .setLngLat([lon, lat])
-             .addTo(map);
-
+        //Markers
+        if (jsonArray != null) {
+            //Print all fires
+            const jsonParsed = JSON.parse(jsonArray);
+            for (var i = 0; i < jsonParsed.length; i++) {
+                var el = document.createElement('div');
+                el.id = 'markerWithExternalCss';
+                var markerWithExternalCss = new mapboxgl.Marker(el)
+                    .setLngLat([jsonParsed[i].lon, jsonParsed[i].lat])
+                    .addTo(map);
+            }
+        }
+        else {
+            //Print selected fire
+            var el = document.createElement('div');
+            el.id = 'markerWithExternalCss';
+            var markerWithExternalCss = new mapboxgl.Marker(el)
+                .setLngLat([lon, lat])
+                .addTo(map);
+        }
     </script>
 </body>
 
